@@ -2,12 +2,9 @@
   "name": "freight-management",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "client"
-  ],
   "scripts": {
-    "dev": "npm run dev --workspace=client",
-    "build": "npm run build --workspace=client",
+    "dev": "cd client && npm run dev",
+    "build": "cd client && npm run build",
     "amplify:sandbox": "npx ampx sandbox",
     "amplify:deploy": "npx ampx pipeline-deploy",
     "amplify:generate": "npx ampx generate outputs --app-id $(cat .amplify-app-id) --branch main"
