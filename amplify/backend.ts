@@ -1,4 +1,5 @@
 import { defineBackend } from '@aws-amplify/backend';
+import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { storage } from './storage/resource';
@@ -11,20 +12,6 @@ import { carrierInvoiceImportFn } from './functions/carrierInvoiceImport/resourc
 import { invoiceReconcileFn } from './functions/invoiceReconcile/resource';
 import { reportExportFn } from './functions/reportExport/resource';
 
-/**
- * Freight Management — Amplify Gen 2 Backend
- *
- * Tenancy model:
- *   BrokerAccount → WarehouseCustomer → TenantAccount
- *
- * Cognito groups:
- *   Brokers          — top-level freight broker users
- *   WarehouseAdmins  — warehouse customer admins
- *   TenantUsers      — warehouse sub-tenant users (create connotes, manifests)
- *
- * JWT custom claims injected by preTokenGeneration Lambda:
- *   custom:brokerId, custom:warehouseId, custom:tenantId, custom:role
- */
 export const backend = defineBackend({
   auth,
   data,
@@ -39,103 +26,77 @@ export const backend = defineBackend({
   reportExportFn,
 });
 
-// ─── Grant Lambda functions access to DynamoDB tables ─────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const {
-  amplifyDynamoDbTables: tables,
-} = backend.data.resources;
+/** Cast IFunction → Function so we can call addEnvironment */
+function fn(resource: { resources: { lambda: { node: unknown } } }): LambdaFunction {
+  return resource.resources.lambda as unknown as LambdaFunction;
+}
 
-// rateCardImport needs: CarrierRateCard (write), RateCardEntry (write)
-backend.rateCardImportFn.resources.lambda.addEnvironment(
-  'RATE_CARD_TABLE', tables['CarrierRateCard'].tableName,
-);
-backend.rateCardImportFn.resources.lambda.addEnvironment(
-  'RATE_CARD_ENTRY_TABLE', tables['RateCardEntry'].tableName,
-);
+// ─── DynamoDB table references ────────────────────────────────────────────────
+
+const tables = backend.data.resources.tables;
+
+// ─── rateCardImport: CarrierRateCard (write), RateCardEntry (write) ───────────
+
+fn(backend.rateCardImportFn).addEnvironment('RATE_CARD_TABLE',       tables['CarrierRateCard'].tableName);
+fn(backend.rateCardImportFn).addEnvironment('RATE_CARD_ENTRY_TABLE',  tables['RateCardEntry'].tableName);
 tables['CarrierRateCard'].grantWriteData(backend.rateCardImportFn.resources.lambda);
 tables['RateCardEntry'].grantWriteData(backend.rateCardImportFn.resources.lambda);
 
-// rateCardPublish needs: RateCardEntry (read), PublishedRateCard (write), PublishedRateCardEntry (write)
-backend.rateCardPublishFn.resources.lambda.addEnvironment(
-  'RATE_CARD_ENTRY_TABLE', tables['RateCardEntry'].tableName,
-);
-backend.rateCardPublishFn.resources.lambda.addEnvironment(
-  'PUBLISHED_RATE_CARD_TABLE', tables['PublishedRateCard'].tableName,
-);
-backend.rateCardPublishFn.resources.lambda.addEnvironment(
-  'PUBLISHED_RATE_CARD_ENTRY_TABLE', tables['PublishedRateCardEntry'].tableName,
-);
+// ─── rateCardPublish: RateCardEntry (read), PublishedRateCard/Entry (write) ───
+
+fn(backend.rateCardPublishFn).addEnvironment('RATE_CARD_ENTRY_TABLE',          tables['RateCardEntry'].tableName);
+fn(backend.rateCardPublishFn).addEnvironment('PUBLISHED_RATE_CARD_TABLE',       tables['PublishedRateCard'].tableName);
+fn(backend.rateCardPublishFn).addEnvironment('PUBLISHED_RATE_CARD_ENTRY_TABLE', tables['PublishedRateCardEntry'].tableName);
 tables['RateCardEntry'].grantReadData(backend.rateCardPublishFn.resources.lambda);
 tables['PublishedRateCard'].grantWriteData(backend.rateCardPublishFn.resources.lambda);
 tables['PublishedRateCardEntry'].grantWriteData(backend.rateCardPublishFn.resources.lambda);
 
-// connoteRaise needs: Connote (read/write), ConnoteLineItem (read)
-backend.connoteRaiseFn.resources.lambda.addEnvironment(
-  'CONNOTE_TABLE', tables['Connote'].tableName,
-);
-backend.connoteRaiseFn.resources.lambda.addEnvironment(
-  'CONNOTE_LINE_ITEM_TABLE', tables['ConnoteLineItem'].tableName,
-);
+// ─── connoteRaise: Connote (read/write), ConnoteLineItem (read) ───────────────
+
+fn(backend.connoteRaiseFn).addEnvironment('CONNOTE_TABLE',          tables['Connote'].tableName);
+fn(backend.connoteRaiseFn).addEnvironment('CONNOTE_LINE_ITEM_TABLE', tables['ConnoteLineItem'].tableName);
 tables['Connote'].grantReadWriteData(backend.connoteRaiseFn.resources.lambda);
 tables['ConnoteLineItem'].grantReadData(backend.connoteRaiseFn.resources.lambda);
 
-// manifestSend needs: Manifest (read/write), Connote (read), ConnoteLineItem (read)
-backend.manifestSendFn.resources.lambda.addEnvironment(
-  'MANIFEST_TABLE', tables['Manifest'].tableName,
-);
-backend.manifestSendFn.resources.lambda.addEnvironment(
-  'CONNOTE_TABLE', tables['Connote'].tableName,
-);
-backend.manifestSendFn.resources.lambda.addEnvironment(
-  'CONNOTE_LINE_ITEM_TABLE', tables['ConnoteLineItem'].tableName,
-);
+// ─── manifestSend: Manifest (read/write), Connote (read), ConnoteLineItem (read)
+
+fn(backend.manifestSendFn).addEnvironment('MANIFEST_TABLE',         tables['Manifest'].tableName);
+fn(backend.manifestSendFn).addEnvironment('CONNOTE_TABLE',           tables['Connote'].tableName);
+fn(backend.manifestSendFn).addEnvironment('CONNOTE_LINE_ITEM_TABLE', tables['ConnoteLineItem'].tableName);
 tables['Manifest'].grantReadWriteData(backend.manifestSendFn.resources.lambda);
 tables['Connote'].grantReadData(backend.manifestSendFn.resources.lambda);
 tables['ConnoteLineItem'].grantReadData(backend.manifestSendFn.resources.lambda);
 
-// carrierInvoiceImport needs: CarrierInvoice (write), CarrierInvoiceLine (write)
-backend.carrierInvoiceImportFn.resources.lambda.addEnvironment(
-  'CARRIER_INVOICE_TABLE', tables['CarrierInvoice'].tableName,
-);
-backend.carrierInvoiceImportFn.resources.lambda.addEnvironment(
-  'CARRIER_INVOICE_LINE_TABLE', tables['CarrierInvoiceLine'].tableName,
-);
+// ─── carrierInvoiceImport: CarrierInvoice (write), CarrierInvoiceLine (write) ─
+
+fn(backend.carrierInvoiceImportFn).addEnvironment('CARRIER_INVOICE_TABLE',      tables['CarrierInvoice'].tableName);
+fn(backend.carrierInvoiceImportFn).addEnvironment('CARRIER_INVOICE_LINE_TABLE',  tables['CarrierInvoiceLine'].tableName);
 tables['CarrierInvoice'].grantWriteData(backend.carrierInvoiceImportFn.resources.lambda);
 tables['CarrierInvoiceLine'].grantWriteData(backend.carrierInvoiceImportFn.resources.lambda);
 
-// invoiceReconcile needs: CarrierInvoice (write), CarrierInvoiceLine (read/write), Connote (read)
-backend.invoiceReconcileFn.resources.lambda.addEnvironment(
-  'CARRIER_INVOICE_TABLE', tables['CarrierInvoice'].tableName,
-);
-backend.invoiceReconcileFn.resources.lambda.addEnvironment(
-  'CARRIER_INVOICE_LINE_TABLE', tables['CarrierInvoiceLine'].tableName,
-);
-backend.invoiceReconcileFn.resources.lambda.addEnvironment(
-  'CONNOTE_TABLE', tables['Connote'].tableName,
-);
+// ─── invoiceReconcile: CarrierInvoice (write), CarrierInvoiceLine (rw), Connote (read)
+
+fn(backend.invoiceReconcileFn).addEnvironment('CARRIER_INVOICE_TABLE',     tables['CarrierInvoice'].tableName);
+fn(backend.invoiceReconcileFn).addEnvironment('CARRIER_INVOICE_LINE_TABLE', tables['CarrierInvoiceLine'].tableName);
+fn(backend.invoiceReconcileFn).addEnvironment('CONNOTE_TABLE',              tables['Connote'].tableName);
 tables['CarrierInvoice'].grantReadWriteData(backend.invoiceReconcileFn.resources.lambda);
 tables['CarrierInvoiceLine'].grantReadWriteData(backend.invoiceReconcileFn.resources.lambda);
 tables['Connote'].grantReadData(backend.invoiceReconcileFn.resources.lambda);
 
-// reportExport needs: Connote (read)
-backend.reportExportFn.resources.lambda.addEnvironment(
-  'CONNOTE_TABLE', tables['Connote'].tableName,
-);
+// ─── reportExport: Connote (read) ─────────────────────────────────────────────
+
+fn(backend.reportExportFn).addEnvironment('CONNOTE_TABLE', tables['Connote'].tableName);
 tables['Connote'].grantReadData(backend.reportExportFn.resources.lambda);
 
-// ─── Grant Lambda functions access to S3 storage ──────────────────────────────
-const { buckets } = backend.storage.resources;
-const mainBucket = buckets['freightStorage'];
+// ─── S3 storage grants ─────────────────────────────────────────────────────────
 
-backend.rateCardImportFn.resources.lambda.addEnvironment(
-  'STORAGE_BUCKET_NAME', mainBucket.bucketName,
-);
-backend.carrierInvoiceImportFn.resources.lambda.addEnvironment(
-  'STORAGE_BUCKET_NAME', mainBucket.bucketName,
-);
-backend.reportExportFn.resources.lambda.addEnvironment(
-  'STORAGE_BUCKET_NAME', mainBucket.bucketName,
-);
-mainBucket.grantRead(backend.rateCardImportFn.resources.lambda);
-mainBucket.grantRead(backend.carrierInvoiceImportFn.resources.lambda);
-mainBucket.grantReadWrite(backend.reportExportFn.resources.lambda);
+const bucket = backend.storage.resources.bucket;
+
+fn(backend.rateCardImportFn).addEnvironment('STORAGE_BUCKET_NAME',       bucket.bucketName);
+fn(backend.carrierInvoiceImportFn).addEnvironment('STORAGE_BUCKET_NAME', bucket.bucketName);
+fn(backend.reportExportFn).addEnvironment('STORAGE_BUCKET_NAME',         bucket.bucketName);
+bucket.grantRead(backend.rateCardImportFn.resources.lambda);
+bucket.grantRead(backend.carrierInvoiceImportFn.resources.lambda);
+bucket.grantReadWrite(backend.reportExportFn.resources.lambda);
