@@ -33,7 +33,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div style={logoStyle}>
         <span style={{ fontSize: 22 }}>🚚</span>
-        <span style={{ fontWeight: 700, fontSize: 18, color: '#fff' }}>FreightOS</span>
+        <span style={{ fontWeight: 700, fontSize: 18, color: '#fff' }}>FreightViz</span>
       </div>
 
       {/* Role badge */}

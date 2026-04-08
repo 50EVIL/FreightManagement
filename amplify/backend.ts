@@ -1,6 +1,8 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
 import { aws_iam as iam } from 'aws-cdk-lib';
+import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
+import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
 import { auth } from './auth/resource.ts';
 import { data } from './data/resource.ts';
 import { storage } from './storage/resource.ts';
@@ -127,3 +129,51 @@ backend.assignUserTenantFn.resources.lambda.addToRolePolicy(
     resources: [backend.auth.resources.userPool.userPoolArn],
   }),
 );
+
+// ─── Default admin (Broker) seed user ────────────────────────────────────────
+// Created once on first deploy via a CloudFormation custom resource.
+// Email: admin@freightviz.com  |  Temp password: FreightViz@Admin1!
+// Change the password on first sign-in. UsernameExistsException is ignored
+// on subsequent deploys so re-running deploy is safe.
+
+const adminStack = backend.createStack('defaultAdmin');
+const ADMIN_EMAIL = 'admin@freightviz.com';
+
+const createAdminUser = new AwsCustomResource(adminStack, 'CreateAdminUser', {
+  resourceType: 'Custom::CognitoAdminUser',
+  onCreate: {
+    service: 'CognitoIdentityServiceProvider',
+    action: 'adminCreateUser',
+    parameters: {
+      UserPoolId: backend.auth.resources.userPool.userPoolId,
+      Username: ADMIN_EMAIL,
+      TemporaryPassword: 'FreightViz@Admin1!',
+      UserAttributes: [
+        { Name: 'email', Value: ADMIN_EMAIL },
+        { Name: 'email_verified', Value: 'true' },
+        { Name: 'custom:brokerId', Value: 'default' },
+        { Name: 'custom:role', Value: 'Brokers' },
+      ],
+      MessageAction: 'SUPPRESS',
+    },
+    physicalResourceId: PhysicalResourceId.of(`admin-user-${ADMIN_EMAIL}`),
+    ignoreErrorCodesMatching: 'UsernameExistsException',
+  },
+  policy: AwsCustomResourcePolicy.fromSdkCalls({ resources: ['*'] }),
+});
+
+new AwsCustomResource(adminStack, 'AddAdminToGroup', {
+  resourceType: 'Custom::CognitoAdminGroup',
+  onCreate: {
+    service: 'CognitoIdentityServiceProvider',
+    action: 'adminAddUserToGroup',
+    parameters: {
+      UserPoolId: backend.auth.resources.userPool.userPoolId,
+      Username: ADMIN_EMAIL,
+      GroupName: 'Brokers',
+    },
+    physicalResourceId: PhysicalResourceId.of(`admin-group-${ADMIN_EMAIL}`),
+    ignoreErrorCodesMatching: 'UserNotFoundException',
+  },
+  policy: AwsCustomResourcePolicy.fromSdkCalls({ resources: ['*'] }),
+}).node.addDependency(createAdminUser);

@@ -21,7 +21,7 @@ export default function TopBar() {
   const location = useLocation();
   const { tenantId, brokerId } = useTenant();
 
-  const title = PAGE_TITLES[location.pathname] ?? 'FreightOS';
+  const title = PAGE_TITLES[location.pathname] ?? 'FreightViz';
 
   return (
     <header style={headerStyle}>

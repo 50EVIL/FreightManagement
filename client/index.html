@@ -4,11 +4,26 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FreightOS — Freight Management</title>
+    <title>FreightViz — Freight Management</title>
     <style>
       /* Minimal reset before styles load */
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+      /* Login page background */
+      [data-amplify-authenticator] {
+        min-height: 100vh;
+        background-color: #f9fafb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      /* Card shadow & radius */
+      [data-amplify-authenticator] [data-amplify-router] {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+        border: 1px solid #e5e7eb;
+      }
     </style>
   </head>
   <body>
