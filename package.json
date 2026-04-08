@@ -12,6 +12,7 @@
   "devDependencies": {
     "@aws-amplify/backend": "^1.6.0",
     "@aws-amplify/backend-cli": "^1.4.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.600.0",
     "@aws-sdk/client-dynamodb": "^3.600.0",
     "@aws-sdk/client-s3": "^3.600.0",
     "@aws-sdk/lib-dynamodb": "^3.600.0",
