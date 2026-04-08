@@ -4,6 +4,8 @@ import { useTenant } from '@/providers/TenantProvider';
 const PAGE_TITLES: Record<string, string> = {
   '/broker': 'Broker Dashboard',
   '/broker/warehouses': 'Warehouse Customers',
+  '/broker/tenants': 'Tenant Management',
+  '/broker/users': 'User Management',
   '/broker/rate-cards': 'Carrier Rate Cards',
   '/broker/rate-cards/import': 'Import Rate Card',
   '/broker/additional-charges': 'Additional Charges & Surcharges',

@@ -10,8 +10,8 @@ interface NavItem {
 
 const BROKER_NAV: NavItem[] = [
   { path: '/broker', label: 'Dashboard', icon: '🏠' },
-  { path: '/broker/warehouses', label: 'Warehouses', icon: '🏭' },
-  { path: '/broker/rate-cards', label: 'Rate Cards', icon: '📋' },
+  { path: '/broker/warehouses', label: 'Warehouses', icon: '🏭' },  { path: '/broker/tenants', label: 'Tenants', icon: '🏢' },
+  { path: '/broker/users', label: 'Users', icon: '👥' },  { path: '/broker/rate-cards', label: 'Rate Cards', icon: '📋' },
   { path: '/broker/additional-charges', label: 'Surcharges', icon: '💲' },
   { path: '/broker/invoice-reconciliation', label: 'Invoice Reconciliation', icon: '🧾' },
 ];

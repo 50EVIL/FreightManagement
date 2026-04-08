@@ -8,6 +8,8 @@ import { storage } from './storage/resource.ts';
 import { preTokenGeneration } from './functions/preTokenGeneration/resource.ts';
 import { postConfirmation } from './functions/postConfirmation/resource.ts';
 import { assignUserTenantFn } from './functions/assignUserTenant/resource.ts';
+import { listCognitoUsersFn } from './functions/listCognitoUsers/resource.ts';
+import { inviteUserFn } from './functions/inviteUser/resource.ts';
 import { rateCardImportFn } from './functions/rateCardImport/resource.ts';
 import { rateCardPublishFn } from './functions/rateCardPublish/resource.ts';
 import { connoteRaiseFn } from './functions/connoteRaise/resource.ts';
@@ -23,6 +25,8 @@ export const backend = defineBackend({
   preTokenGeneration,
   postConfirmation,
   assignUserTenantFn,
+  listCognitoUsersFn,
+  inviteUserFn,
   rateCardImportFn,
   rateCardPublishFn,
   connoteRaiseFn,
@@ -125,6 +129,26 @@ fn(backend.assignUserTenantFn).addEnvironment('USER_POOL_ID', backend.auth.resou
 backend.assignUserTenantFn.resources.lambda.addToRolePolicy(
   new iam.PolicyStatement({
     actions: ['cognito-idp:ListUsers', 'cognito-idp:AdminUpdateUserAttributes'],
+    resources: [backend.auth.resources.userPool.userPoolArn],
+  }),
+);
+
+// ─── listCognitoUsers: ListUsers ──────────────────────────────────────────────────────────────
+
+fn(backend.listCognitoUsersFn).addEnvironment('USER_POOL_ID', backend.auth.resources.userPool.userPoolId);
+backend.listCognitoUsersFn.resources.lambda.addToRolePolicy(
+  new iam.PolicyStatement({
+    actions: ['cognito-idp:ListUsers'],
+    resources: [backend.auth.resources.userPool.userPoolArn],
+  }),
+);
+
+// ─── inviteUser: AdminCreateUser + AdminAddUserToGroup ──────────────────────────────────
+
+fn(backend.inviteUserFn).addEnvironment('USER_POOL_ID', backend.auth.resources.userPool.userPoolId);
+backend.inviteUserFn.resources.lambda.addToRolePolicy(
+  new iam.PolicyStatement({
+    actions: ['cognito-idp:AdminCreateUser', 'cognito-idp:AdminAddUserToGroup'],
     resources: [backend.auth.resources.userPool.userPoolArn],
   }),
 );

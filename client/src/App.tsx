@@ -8,6 +8,8 @@ import AppShell from '@/components/layout/AppShell';
 import BrokerDashboard from '@/pages/broker/BrokerDashboard';
 import WarehouseCustomers from '@/pages/broker/WarehouseCustomers';
 import TenantAccounts from '@/pages/broker/TenantAccounts';
+import AllTenants from '@/pages/broker/AllTenants';
+import UserManagement from '@/pages/broker/UserManagement';
 import CarrierRateCards from '@/pages/broker/CarrierRateCards';
 import RateCardImport from '@/pages/broker/RateCardImport';
 import AdditionalCharges from '@/pages/broker/AdditionalCharges';
@@ -97,10 +99,12 @@ function AuthenticatedApp() {
             }
           />
 
-          {/* ── Broker routes ─────────────────────────────────── */}
+          {/* ── Broker routes ────────────────────────────────────────────────── */}
           <Route path="/broker" element={<BrokerDashboard />} />
           <Route path="/broker/warehouses" element={<WarehouseCustomers />} />
           <Route path="/broker/warehouses/:warehouseId/tenants" element={<TenantAccounts />} />
+          <Route path="/broker/tenants" element={<AllTenants />} />
+          <Route path="/broker/users" element={<UserManagement />} />
           <Route path="/broker/rate-cards" element={<CarrierRateCards />} />
           <Route path="/broker/rate-cards/import" element={<RateCardImport />} />
           <Route path="/broker/additional-charges" element={<AdditionalCharges />} />

@@ -7,6 +7,8 @@ import { carrierInvoiceImportFn } from '../functions/carrierInvoiceImport/resour
 import { invoiceReconcileFn } from '../functions/invoiceReconcile/resource.ts';
 import { reportExportFn } from '../functions/reportExport/resource.ts';
 import { assignUserTenantFn } from '../functions/assignUserTenant/resource.ts';
+import { listCognitoUsersFn } from '../functions/listCognitoUsers/resource.ts';
+import { inviteUserFn } from '../functions/inviteUser/resource.ts';
 
 const schema = a.schema({
   // ─────────────────────────────────────────────────────────────────────────
@@ -517,6 +519,22 @@ const schema = a.schema({
       username: a.string().required(),
     }))
     .handler(a.handler.function(assignUserTenantFn))
+    .authorization((allow) => [allow.groups(['Brokers'])]),
+
+  listCognitoUsers: a
+    .query()
+    .returns(a.json())
+    .handler(a.handler.function(listCognitoUsersFn))
+    .authorization((allow) => [allow.groups(['Brokers'])]),
+
+  inviteUser: a
+    .mutation()
+    .arguments({ email: a.string().required() })
+    .returns(a.customType({
+      success: a.boolean().required(),
+      username: a.string(),
+    }))
+    .handler(a.handler.function(inviteUserFn))
     .authorization((allow) => [allow.groups(['Brokers'])]),
 });
 
