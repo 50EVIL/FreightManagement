@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.local
+.amplify-app-id
+amplify_outputs.json
+client/src/amplify_outputs.json
+dist/
+.sandbox/
+*.js.map
