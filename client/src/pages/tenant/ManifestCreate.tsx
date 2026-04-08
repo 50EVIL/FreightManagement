@@ -103,7 +103,7 @@ export default function ManifestCreate() {
       await client.mutations.sendManifest({ manifestId: manifest.id });
       return manifest;
     },
-    onSuccess: (manifest) => navigate(`/tenant/manifests`),
+    onSuccess: () => navigate(`/tenant/manifests`),
   });
 
   return (

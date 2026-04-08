@@ -26,7 +26,7 @@ const schema = z.object({
   description: z.string().optional(),
   chargeType: z.string().min(1) as z.ZodType<'flat' | 'per_kg' | 'per_cubic' | 'per_connote' | 'percentage' | 'single_connote_minimum' | 'fuel_surcharge_pct' | 'remote_area_flat' | 'tailLift_flat' | 'dangerous_goods_pct' | 'booking_fee_flat'>,
   value: z.coerce.number().positive(),
-  applicableTo: z.string(),
+  applicableTo: z.string() as z.ZodType<'all' | 'specific_carrier' | 'specific_service' | 'specific_route'>,
   carrierId: z.string().optional(),
   isActive: z.boolean(),
   sortOrder: z.coerce.number().optional(),
