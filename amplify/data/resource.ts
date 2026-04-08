@@ -1,11 +1,11 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
-import { rateCardImportFn } from '../functions/rateCardImport/resource.js';
-import { rateCardPublishFn } from '../functions/rateCardPublish/resource.js';
-import { connoteRaiseFn } from '../functions/connoteRaise/resource.js';
-import { manifestSendFn } from '../functions/manifestSend/resource.js';
-import { carrierInvoiceImportFn } from '../functions/carrierInvoiceImport/resource.js';
-import { invoiceReconcileFn } from '../functions/invoiceReconcile/resource.js';
-import { reportExportFn } from '../functions/reportExport/resource.js';
+import { rateCardImportFn } from '../functions/rateCardImport/resource.ts';
+import { rateCardPublishFn } from '../functions/rateCardPublish/resource.ts';
+import { connoteRaiseFn } from '../functions/connoteRaise/resource.ts';
+import { manifestSendFn } from '../functions/manifestSend/resource.ts';
+import { carrierInvoiceImportFn } from '../functions/carrierInvoiceImport/resource.ts';
+import { invoiceReconcileFn } from '../functions/invoiceReconcile/resource.ts';
+import { reportExportFn } from '../functions/reportExport/resource.ts';
 
 const schema = a.schema({
   // ─────────────────────────────────────────────────────────────────────────
