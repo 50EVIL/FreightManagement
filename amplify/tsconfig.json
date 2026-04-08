@@ -9,6 +9,8 @@
     "strict": true,
     "noImplicitAny": false,
     "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
     "types": ["node", "aws-lambda"]
   },
   "include": ["./**/*.ts"],
