@@ -6,6 +6,7 @@ import { manifestSendFn } from '../functions/manifestSend/resource.ts';
 import { carrierInvoiceImportFn } from '../functions/carrierInvoiceImport/resource.ts';
 import { invoiceReconcileFn } from '../functions/invoiceReconcile/resource.ts';
 import { reportExportFn } from '../functions/reportExport/resource.ts';
+import { assignUserTenantFn } from '../functions/assignUserTenant/resource.ts';
 
 const schema = a.schema({
   // ─────────────────────────────────────────────────────────────────────────
@@ -502,6 +503,21 @@ const schema = a.schema({
     .authorization((allow) => [
       allow.groups(['Brokers', 'WarehouseAdmins', 'TenantUsers']),
     ]),
+
+  assignUserTenant: a
+    .mutation()
+    .arguments({
+      email: a.string().required(),
+      tenantId: a.string().required(),
+      warehouseId: a.string().required(),
+      brokerId: a.string().required(),
+    })
+    .returns(a.customType({
+      success: a.boolean().required(),
+      username: a.string().required(),
+    }))
+    .handler(a.handler.function(assignUserTenantFn))
+    .authorization((allow) => [allow.groups(['Brokers'])]),
 });
 
 export type Schema = ClientSchema<typeof schema>;

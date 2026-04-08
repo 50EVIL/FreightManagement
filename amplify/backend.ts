@@ -6,6 +6,7 @@ import { data } from './data/resource.ts';
 import { storage } from './storage/resource.ts';
 import { preTokenGeneration } from './functions/preTokenGeneration/resource.ts';
 import { postConfirmation } from './functions/postConfirmation/resource.ts';
+import { assignUserTenantFn } from './functions/assignUserTenant/resource.ts';
 import { rateCardImportFn } from './functions/rateCardImport/resource.ts';
 import { rateCardPublishFn } from './functions/rateCardPublish/resource.ts';
 import { connoteRaiseFn } from './functions/connoteRaise/resource.ts';
@@ -20,6 +21,7 @@ export const backend = defineBackend({
   storage,
   preTokenGeneration,
   postConfirmation,
+  assignUserTenantFn,
   rateCardImportFn,
   rateCardPublishFn,
   connoteRaiseFn,
@@ -109,6 +111,16 @@ bucket.grantReadWrite(backend.reportExportFn.resources.lambda);
 backend.postConfirmation.resources.lambda.addToRolePolicy(
   new iam.PolicyStatement({
     actions: ['cognito-idp:AdminAddUserToGroup'],
+    resources: [backend.auth.resources.userPool.userPoolArn],
+  }),
+);
+
+// ─── assignUserTenant: ListUsers + AdminUpdateUserAttributes ──────────────────
+
+fn(backend.assignUserTenantFn).addEnvironment('USER_POOL_ID', backend.auth.resources.userPool.userPoolId);
+backend.assignUserTenantFn.resources.lambda.addToRolePolicy(
+  new iam.PolicyStatement({
+    actions: ['cognito-idp:ListUsers', 'cognito-idp:AdminUpdateUserAttributes'],
     resources: [backend.auth.resources.userPool.userPoolArn],
   }),
 );

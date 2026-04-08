@@ -15,7 +15,13 @@ const schema = z.object({
   contactPhone: z.string().optional(),
 });
 
+const assignSchema = z.object({
+  email: z.string().email('Valid email required'),
+  tenantId: z.string().min(1, 'Select a tenant'),
+});
+
 type FormData = z.infer<typeof schema>;
+type AssignFormData = z.infer<typeof assignSchema>;
 type TenantAcc = Awaited<ReturnType<typeof client.models.TenantAccount.list>>['data'][number];
 
 const columns: ColumnDef<TenantAcc, unknown>[] = [
@@ -43,6 +49,8 @@ export default function TenantAccounts() {
   const { brokerId } = useTenant();
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [showAssignForm, setShowAssignForm] = useState(false);
+  const [assignSuccess, setAssignSuccess] = useState<string | null>(null);
 
   const { data: warehouse } = useQuery({
     queryKey: ['warehouse', warehouseId],
@@ -60,6 +68,28 @@ export default function TenantAccounts() {
     resolver: zodResolver(schema),
   });
 
+  const { register: registerAssign, handleSubmit: handleAssignSubmit, reset: resetAssign, formState: { errors: assignErrors } } = useForm<AssignFormData>({
+    resolver: zodResolver(assignSchema),
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: async (v: AssignFormData) => {
+      const tenant = tenants.find((t) => t.id === v.tenantId);
+      if (!tenant) throw new Error('Tenant not found');
+      return client.mutations.assignUserTenant({
+        email: v.email,
+        tenantId: v.tenantId,
+        warehouseId: warehouseId!,
+        brokerId: brokerId!,
+      });
+    },
+    onSuccess: (_, v) => {
+      setAssignSuccess(`User ${v.email} successfully linked to tenant.`);
+      resetAssign();
+      setTimeout(() => setAssignSuccess(null), 5000);
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: (values: FormData) =>
       client.models.TenantAccount.create({
@@ -74,6 +104,8 @@ export default function TenantAccounts() {
       setShowForm(false);
     },
   });
+
+  const tenants = data?.data ?? [];
 
   return (
     <div>
@@ -117,7 +149,44 @@ export default function TenantAccounts() {
       )}
 
       <div style={cardStyle}>
-        <DataTable data={data?.data ?? []} columns={columns} isLoading={isLoading} emptyMessage="No tenants yet." />
+        <DataTable data={tenants} columns={columns} isLoading={isLoading} emptyMessage="No tenants yet." />
+      </div>
+
+      {/* Assign existing user to a tenant */}
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showAssignForm ? 16 : 0 }}>
+          <div>
+            <strong style={{ fontSize: 14 }}>Assign User to Tenant</strong>
+            <p style={{ margin: '2px 0 0', fontSize: 13, color: '#6b7280' }}>Link a signed-up user's account to one of the tenants above.</p>
+          </div>
+          <button onClick={() => setShowAssignForm(!showAssignForm)} style={primaryBtnStyle}>
+            {showAssignForm ? 'Cancel' : 'Assign User'}
+          </button>
+        </div>
+        {showAssignForm && (
+          <form onSubmit={handleAssignSubmit((v) => assignMutation.mutate(v))} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+            <div>
+              <label style={labelStyle}>User Email *</label>
+              <input {...registerAssign('email')} style={inputStyle} type="email" placeholder="user@example.com" />
+              {assignErrors.email && <span style={errStyle}>{assignErrors.email.message}</span>}
+            </div>
+            <div>
+              <label style={labelStyle}>Tenant *</label>
+              <select {...registerAssign('tenantId')} style={inputStyle}>
+                <option value="">Select tenant…</option>
+                {tenants.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+              {assignErrors.tenantId && <span style={errStyle}>{assignErrors.tenantId.message}</span>}
+            </div>
+            {assignSuccess && <div style={{ gridColumn: '1 / -1', color: '#15803d', fontSize: 13 }}>{assignSuccess}</div>}
+            {assignMutation.error && <div style={{ gridColumn: '1 / -1', color: '#dc2626', fontSize: 13 }}>{String(assignMutation.error)}</div>}
+            <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
+              <button type="submit" disabled={assignMutation.isPending} style={primaryBtnStyle}>
+                {assignMutation.isPending ? 'Assigning…' : 'Assign User'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

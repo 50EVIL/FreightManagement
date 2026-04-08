@@ -25,10 +25,11 @@ import Reports from '@/pages/tenant/Reports';
 
 // Shared
 import NotFoundPage from '@/pages/shared/NotFoundPage';
+import OnboardingPendingPage from '@/pages/shared/OnboardingPendingPage';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 function AuthenticatedApp() {
-  const { role, isLoading } = useTenant();
+  const { role, tenantId, isTenantUser, isLoading } = useTenant();
 
   if (isLoading) {
     return (
@@ -36,6 +37,11 @@ function AuthenticatedApp() {
         <LoadingSpinner size="lg" />
       </div>
     );
+  }
+
+  // Tenant users with no assigned tenant go to the onboarding page
+  if (isTenantUser && !tenantId) {
+    return <OnboardingPendingPage />;
   }
 
   return (
