@@ -1,9 +1,11 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
+import { aws_iam as iam } from 'aws-cdk-lib';
 import { auth } from './auth/resource.ts';
 import { data } from './data/resource.ts';
 import { storage } from './storage/resource.ts';
 import { preTokenGeneration } from './functions/preTokenGeneration/resource.ts';
+import { postConfirmation } from './functions/postConfirmation/resource.ts';
 import { rateCardImportFn } from './functions/rateCardImport/resource.ts';
 import { rateCardPublishFn } from './functions/rateCardPublish/resource.ts';
 import { connoteRaiseFn } from './functions/connoteRaise/resource.ts';
@@ -17,6 +19,7 @@ export const backend = defineBackend({
   data,
   storage,
   preTokenGeneration,
+  postConfirmation,
   rateCardImportFn,
   rateCardPublishFn,
   connoteRaiseFn,
@@ -100,3 +103,12 @@ fn(backend.reportExportFn).addEnvironment('STORAGE_BUCKET_NAME',         bucket.
 bucket.grantRead(backend.rateCardImportFn.resources.lambda);
 bucket.grantRead(backend.carrierInvoiceImportFn.resources.lambda);
 bucket.grantReadWrite(backend.reportExportFn.resources.lambda);
+
+// ─── postConfirmation: grant AdminAddUserToGroup on the user pool ─────────────
+
+backend.postConfirmation.resources.lambda.addToRolePolicy(
+  new iam.PolicyStatement({
+    actions: ['cognito-idp:AdminAddUserToGroup'],
+    resources: [backend.auth.resources.userPool.userPoolArn],
+  }),
+);

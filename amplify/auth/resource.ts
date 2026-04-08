@@ -1,5 +1,6 @@
 import { defineAuth } from '@aws-amplify/backend';
 import { preTokenGeneration } from '../functions/preTokenGeneration/resource.ts';
+import { postConfirmation } from '../functions/postConfirmation/resource.ts';
 
 export const auth = defineAuth({
   loginWith: {
@@ -26,5 +27,6 @@ export const auth = defineAuth({
   groups: ['Brokers', 'WarehouseAdmins', 'TenantUsers'],
   triggers: {
     preTokenGeneration,
+    postConfirmation,
   },
 });
