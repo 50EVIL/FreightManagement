@@ -48,7 +48,7 @@ export default function InvoiceReconciliation() {
     enabled: !!brokerId,
   });
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, reset, formState: { errors: _errors } } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const importMutation = useMutation({
     mutationFn: async (v: FormData) => {

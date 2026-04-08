@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { client } from '@/lib/amplifyClient';
 import { useTenant } from '@/providers/TenantProvider';
 import { getCarrierLabel } from '@/types/carriers';
-import { formatWeight, formatCubic, computeCubicM3 } from '@/lib/formatters';
+import { formatWeight, formatCubic } from '@/lib/formatters';
 import StatusBadge from '@/components/ui/StatusBadge';
 import type { ConnoteStatus } from '@/types/connote';
 
@@ -100,7 +100,7 @@ export default function ManifestCreate() {
       );
 
       // Send to carrier
-      const result = await client.mutations.sendManifest({ manifestId: manifest.id });
+      await client.mutations.sendManifest({ manifestId: manifest.id });
       return manifest;
     },
     onSuccess: (manifest) => navigate(`/tenant/manifests`),

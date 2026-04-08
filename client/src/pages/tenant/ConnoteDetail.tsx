@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useParams, Link } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/amplifyClient';
 import StatusBadge from '@/components/ui/StatusBadge';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -10,7 +10,6 @@ import type { ConnoteStatus } from '@/types/connote';
 
 export default function ConnoteDetail() {
   const { connoteId } = useParams<{ connoteId: string }>();
-  const navigate = useNavigate();
   const qc = useQueryClient();
   const [isRaising, setIsRaising] = useState(false);
   const [raiseError, setRaiseError] = useState<string | null>(null);

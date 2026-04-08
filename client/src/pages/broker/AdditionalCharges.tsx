@@ -24,7 +24,7 @@ const CHARGE_TYPES = [
 const schema = z.object({
   name: z.string().min(2),
   description: z.string().optional(),
-  chargeType: z.string().min(1),
+  chargeType: z.string().min(1) as z.ZodType<'flat' | 'per_kg' | 'per_cubic' | 'per_connote' | 'percentage' | 'single_connote_minimum' | 'fuel_surcharge_pct' | 'remote_area_flat' | 'tailLift_flat' | 'dangerous_goods_pct' | 'booking_fee_flat'>,
   value: z.coerce.number().positive(),
   applicableTo: z.string(),
   carrierId: z.string().optional(),

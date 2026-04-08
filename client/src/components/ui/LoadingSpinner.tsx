@@ -1,5 +1,3 @@
-import clsx from 'clsx';
-
 interface Props {
   size?: 'sm' | 'md' | 'lg';
   label?: string;
