@@ -111,7 +111,10 @@ bucket.grantReadWrite(backend.reportExportFn.resources.lambda);
 backend.postConfirmation.resources.lambda.addToRolePolicy(
   new iam.PolicyStatement({
     actions: ['cognito-idp:AdminAddUserToGroup'],
-    resources: [backend.auth.resources.userPool.userPoolArn],
+    // Use '*' here — referencing userPoolArn directly creates a CDK circular
+    // dependency since postConfirmation lives inside the auth stack alongside
+    // the UserPool that also references this Lambda as a trigger.
+    resources: ['*'],
   }),
 );
 
