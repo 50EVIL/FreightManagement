@@ -1,5 +1,5 @@
 import { defineAuth } from '@aws-amplify/backend';
-import { preTokenGeneration } from '../functions/preTokenGeneration/resource';
+import { preTokenGeneration } from '../functions/preTokenGeneration/resource.js';
 
 export const auth = defineAuth({
   loginWith: {

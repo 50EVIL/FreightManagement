@@ -1,16 +1,16 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
-import { auth } from './auth/resource';
-import { data } from './data/resource';
-import { storage } from './storage/resource';
-import { preTokenGeneration } from './functions/preTokenGeneration/resource';
-import { rateCardImportFn } from './functions/rateCardImport/resource';
-import { rateCardPublishFn } from './functions/rateCardPublish/resource';
-import { connoteRaiseFn } from './functions/connoteRaise/resource';
-import { manifestSendFn } from './functions/manifestSend/resource';
-import { carrierInvoiceImportFn } from './functions/carrierInvoiceImport/resource';
-import { invoiceReconcileFn } from './functions/invoiceReconcile/resource';
-import { reportExportFn } from './functions/reportExport/resource';
+import { auth } from './auth/resource.js';
+import { data } from './data/resource.js';
+import { storage } from './storage/resource.js';
+import { preTokenGeneration } from './functions/preTokenGeneration/resource.js';
+import { rateCardImportFn } from './functions/rateCardImport/resource.js';
+import { rateCardPublishFn } from './functions/rateCardPublish/resource.js';
+import { connoteRaiseFn } from './functions/connoteRaise/resource.js';
+import { manifestSendFn } from './functions/manifestSend/resource.js';
+import { carrierInvoiceImportFn } from './functions/carrierInvoiceImport/resource.js';
+import { invoiceReconcileFn } from './functions/invoiceReconcile/resource.js';
+import { reportExportFn } from './functions/reportExport/resource.js';
 
 export const backend = defineBackend({
   auth,
