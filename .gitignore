@@ -7,3 +7,6 @@ client/src/amplify_outputs.json
 dist/
 .sandbox/
 *.js.map
+# Lock files are generated on the build server to avoid cross-OS platform conflicts
+package-lock.json
+client/package-lock.json
