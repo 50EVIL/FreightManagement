@@ -5,4 +5,5 @@ export const rateCardImportFn = defineFunction({
   entry: './handler.ts',
   timeoutSeconds: 120,
   memoryMB: 512,
+  resourceGroupName: 'data',
 });

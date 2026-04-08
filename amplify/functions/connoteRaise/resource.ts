@@ -5,4 +5,5 @@ export const connoteRaiseFn = defineFunction({
   entry: './handler.ts',
   timeoutSeconds: 60,
   memoryMB: 256,
+  resourceGroupName: 'data',
 });
